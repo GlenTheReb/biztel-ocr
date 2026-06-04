@@ -19,9 +19,10 @@ This document outlines the AI-assisted engineering workflow used to build the Bi
 *   **Prompt Engineering (AI Assisted):** The prompt used in `/api/upload` was crafted by the AI to enforce strict JSON schemas and return parallel `confidenceScores` for every single field extracted from the handwritten image.
 *   **UI Auditing (Manual Intervention):** While the backend logic was updated to use Gemini 3.5, the user manually caught and directed the AI to fix hardcoded string discrepancies in the Sidebar UI.
 *   **API Model String Crash (Debugging):** The AI stubbornly left the SDK model string as `"gemini-1.5-flash"` in the API route, causing a 404 crash on the first upload attempt. The user had to manually intervene again to force the AI to update the actual code string to `"gemini-3.5-flash"`.
+*   **Execution Rule Violation (Manual Intervention):** During the final polish phase, the AI agent became overly eager and began writing code for Requirements 6 and 7 concurrently without asking for explicit permission. The user had to strictly reprimand the AI and re-establish the "one-by-one" rule, proving the necessity of human oversight in autonomous workflows.
 
 ## Areas where AI helped most
 *   **Speed:** Setting up Drizzle ORM schemas and the Next.js App Router boilerplate.
 *   **Multimodal OCR:** Instead of writing complex Regex pipelines with Tesseract, using Gemini 3.5 Flash allowed us to map visual handwritten data directly to a TypeScript interface in one API call.
-*   **Data Aggregation:** The AI rapidly built Drizzle queries and JavaScript reducers to dynamically populate the Dashboard with shift-wise and machine-wise operational insights.
+*   **Data Aggregation & Filtering:** The AI rapidly built Drizzle queries for Dashboard analytics, and implemented Client Component state (`useState`) to build a dynamic search and filter system for the Upload History table.
 *   **UI/UX:** Rapidly generating premium dark-mode Tailwind v4 components with proper hover states and active route highlighting.
