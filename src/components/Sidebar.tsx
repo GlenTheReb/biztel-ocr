@@ -1,5 +1,5 @@
 "use client";
-
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, UploadCloud, History, FileText } from "lucide-react";
@@ -13,6 +13,13 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [geminiStatus, setGeminiStatus] = useState<"checking" | "up" | "down">("checking");
+
+  useEffect(() => {
+    fetch('/api/health')
+      .then(res => res.ok ? setGeminiStatus("up") : setGeminiStatus("down"))
+      .catch(() => setGeminiStatus("down"));
+  }, []);
 
   return (
     <div className="flex h-full w-64 flex-col border-r border-zinc-800 bg-zinc-950 px-4 py-6 text-zinc-300">
@@ -54,11 +61,19 @@ export function Sidebar() {
       
       <div className="mt-auto pt-6 border-t border-zinc-800/50">
         <div className="flex items-center gap-3 px-2">
-          <div className="h-8 w-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400">
+          <div className={cn(
+            "h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-colors",
+            geminiStatus === "up" ? "border-emerald-500 bg-emerald-500/10 text-emerald-500" : 
+            geminiStatus === "down" ? "border-red-500 bg-red-500/10 text-red-500" :
+            "border-zinc-700 bg-zinc-800 text-zinc-400"
+          )}>
             AI
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-zinc-200">System Ready</span>
+            <span className="text-sm font-medium text-zinc-200">
+              {geminiStatus === "checking" ? "Checking Status..." : 
+               geminiStatus === "up" ? "System Ready" : "API Offline"}
+            </span>
             <span className="text-xs text-zinc-500">Gemini 3.5 Flash</span>
           </div>
         </div>

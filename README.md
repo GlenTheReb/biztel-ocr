@@ -1,5 +1,7 @@
 # Biztel OCR: AI-Powered Workflow Automation System
 
+**Live Demo:** [https://biztel-ocr.vercel.app](https://biztel-ocr.vercel.app)
+
 A web application prototype built to digitize handwritten/semi-structured operational documents and convert them into structured, reviewable operational records with analytics and validation workflows. 
 
 Built as an assignment for BiztelAI.
@@ -27,6 +29,7 @@ Built as an assignment for BiztelAI.
 6. **Analytics Dashboard:** KPI cards displaying total uploads, pending vs approved records, and manufacturing aggregates.
 7. **Search & History:** A comprehensive data table showing all past uploads grouped by image.
 8. **Global Notifications (Bonus):** A Google Cloud-style Navbar notification system tracking real-time async events, persisted locally.
+9. **Data Management & UX Polish (Bonus):** Full CRUD capability allowing batch deletion of bad uploads via custom UI modals, plus a real-time Gemini API connectivity status ring.
 
 ## 🛠 Setup Instructions
 

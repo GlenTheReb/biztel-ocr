@@ -2,17 +2,43 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FileText, Eye, CheckCircle, Clock, Search, Filter, ArrowRight } from "lucide-react";
+import { FileText, Eye, CheckCircle, Clock, Search, Filter, ArrowRight, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNotification } from "@/contexts/NotificationContext";
 
 // Define a type for the document
 type DocumentRecord = any;
 
 export default function HistoryTable({ initialDocs }: { initialDocs: DocumentRecord[] }) {
+  const [docs, setDocs] = useState(initialDocs);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const { addNotification, updateNotification } = useNotification();
 
-  const filteredDocs = initialDocs.filter((doc) => {
+  const handleDelete = async (fileName: string) => {
+    
+    setIsDeleting(fileName);
+    const notifId = addNotification("Deleting document...", "loading");
+    try {
+      const res = await fetch(`/api/history/${encodeURIComponent(fileName)}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setDocs(prev => prev.filter(d => d.fileName !== fileName));
+        updateNotification(notifId, "Document deleted successfully", "success");
+      } else {
+        updateNotification(notifId, "Failed to delete document", "error");
+      }
+    } catch (e) {
+      updateNotification(notifId, "Error deleting document", "error");
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
+  const filteredDocs = docs.filter((doc) => {
     // Search filter
     const matchesSearch = 
       (doc.fileName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -104,13 +130,23 @@ export default function HistoryTable({ initialDocs }: { initialDocs: DocumentRec
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link 
-                        href={`/review/${encodeURIComponent(doc.fileName)}`}
-                        className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600/10 px-3 py-1.5 text-xs font-semibold text-indigo-400 transition-colors hover:bg-indigo-600/20"
-                      >
-                        View Batch
-                        <ArrowRight size={14} />
-                      </Link>
+                      <div className="flex justify-end items-center gap-2">
+                        <button 
+                          onClick={() => setDeleteConfirm(doc.fileName)}
+                          disabled={isDeleting === doc.fileName}
+                          className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors disabled:opacity-50"
+                          title="Delete Document"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                        <Link 
+                          href={`/review/${encodeURIComponent(doc.fileName)}`}
+                          className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600/10 px-3 py-1.5 text-xs font-semibold text-indigo-400 transition-colors hover:bg-indigo-600/20"
+                        >
+                          View Batch
+                          <ArrowRight size={14} />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -119,6 +155,38 @@ export default function HistoryTable({ initialDocs }: { initialDocs: DocumentRec
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+              <Trash2 className="text-red-500" size={20} />
+              Delete Document?
+            </h3>
+            <p className="mt-2 text-sm text-zinc-400">
+              Are you sure you want to delete all records associated with <strong className="text-zinc-200">{deleteConfirm}</strong>? This action cannot be undone.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="rounded-md border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDelete(deleteConfirm);
+                  setDeleteConfirm(null);
+                }}
+                className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500 transition-colors shadow-lg shadow-red-900/20"
+              >
+                Delete Everything
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -103,7 +103,7 @@ Return ONLY a valid JSON object with exactly this schema (do not include markdow
       }
 
       // Rule: Invalid shift values
-      const validShifts = ["Morning", "Evening", "Night", "1", "2", "3", "Day"];
+      const validShifts = ["Morning", "Evening", "Night", "1", "2", "3", "Day", "I", "II", "III", "i", "ii", "iii"];
       if (extracted.shift && !validShifts.includes(extracted.shift)) {
         validationFailures.push(`Invalid shift value detected: '${extracted.shift}'`);
       }
