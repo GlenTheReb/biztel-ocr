@@ -76,6 +76,30 @@ Return ONLY a valid JSON object with exactly this schema (do not include markdow
     responseText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
     
     const parsedData = JSON.parse(responseText);
+    const extracted = parsedData.extracted || {};
+
+    // ---------------------------------------------------------
+    // Requirement 5: Business Rules Validation
+    // ---------------------------------------------------------
+    const validationFailures: string[] = [];
+    
+    // Rule: Empty or invalid quantity
+    if (extracted.quantityProduced === null || extracted.quantityProduced === undefined || extracted.quantityProduced <= 0) {
+      validationFailures.push("Empty or invalid quantity produced");
+    } else if (extracted.quantityProduced > 10000) {
+      // Rule: Suspicious numeric values
+      validationFailures.push("Suspiciously high quantity produced (>10,000)");
+    }
+
+    // Rule: Invalid shift values
+    const validShifts = ["Morning", "Evening", "Night", "1", "2", "3", "Day"];
+    if (extracted.shift && !validShifts.includes(extracted.shift)) {
+      validationFailures.push(`Invalid shift value detected: '${extracted.shift}'`);
+    }
+
+    // Rule: Missing mandatory fields
+    if (!extracted.machineNumber) validationFailures.push("Missing mandatory field: Machine Number");
+    if (!extracted.date) validationFailures.push("Missing mandatory field: Date");
 
     // Save to Database via Drizzle
     await db.insert(documents).values({
@@ -83,16 +107,16 @@ Return ONLY a valid JSON object with exactly this schema (do not include markdow
       fileName: file.name,
       fileUrl,
       status: "PENDING",
-      date: parsedData.extracted.date || null,
-      shift: parsedData.extracted.shift || null,
-      employeeNumber: parsedData.extracted.employeeNumber || null,
-      operationCode: parsedData.extracted.operationCode || null,
-      machineNumber: parsedData.extracted.machineNumber || null,
-      workOrderNumber: parsedData.extracted.workOrderNumber || null,
-      quantityProduced: parsedData.extracted.quantityProduced || null,
-      timeTaken: parsedData.extracted.timeTaken || null,
+      date: extracted.date || null,
+      shift: extracted.shift || null,
+      employeeNumber: extracted.employeeNumber || null,
+      operationCode: extracted.operationCode || null,
+      machineNumber: extracted.machineNumber || null,
+      workOrderNumber: extracted.workOrderNumber || null,
+      quantityProduced: extracted.quantityProduced || null,
+      timeTaken: extracted.timeTaken || null,
       confidenceScores: JSON.stringify(parsedData.confidenceScores || {}),
-      validationFailures: JSON.stringify([])
+      validationFailures: JSON.stringify(validationFailures)
     });
 
     return NextResponse.json({ success: true, documentId: id });

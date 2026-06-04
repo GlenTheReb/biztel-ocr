@@ -25,6 +25,7 @@ export default function ReviewForm({ document }: { document: DocumentRecord }) {
   });
 
   const confidenceScores = JSON.parse(document.confidenceScores || "{}");
+  const validationFailures: string[] = JSON.parse(document.validationFailures || "[]");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -106,6 +107,18 @@ export default function ReviewForm({ document }: { document: DocumentRecord }) {
       </div>
 
       <div className="flex-1 overflow-y-auto pr-2">
+        {validationFailures.length > 0 && (
+          <div className="mb-6 rounded-md border border-red-500/50 bg-red-500/10 p-4">
+            <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-red-400">
+              <AlertTriangle size={16} /> Business Rule Violations
+            </h4>
+            <ul className="list-disc pl-5 text-xs text-red-300">
+              {validationFailures.map((failure, idx) => (
+                <li key={idx} className="mb-1">{failure}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         {renderField("date", "Date (YYYY-MM-DD)")}
         {renderField("shift", "Shift")}
         {renderField("employeeNumber", "Employee Number")}
