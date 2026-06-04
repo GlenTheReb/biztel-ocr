@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Bell } from "lucide-react";
+import { Bell, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useNotification } from "@/contexts/NotificationContext";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -11,17 +13,73 @@ export function Navbar() {
   if (pathname.includes("/history")) title = "Processed History";
   if (pathname.includes("/review")) title = "Review Record";
 
+  const { notifications } = useNotification();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const unreadCount = notifications.length;
+
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-950 px-8">
       <h1 className="text-lg font-semibold text-zinc-100">{title}</h1>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 relative" ref={dropdownRef}>
         <button 
-          onClick={() => alert("You have 0 new notifications.")}
+          onClick={() => setIsOpen(!isOpen)}
           className="relative text-zinc-400 hover:text-zinc-100 transition-colors"
         >
           <Bell size={20} />
-          <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-zinc-950" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-500 text-[10px] font-bold text-white ring-2 ring-zinc-950">
+              {unreadCount}
+            </span>
+          )}
         </button>
+
+        {isOpen && (
+          <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-zinc-800 bg-zinc-900 shadow-xl z-50 overflow-hidden">
+            <div className="border-b border-zinc-800 bg-zinc-950 px-4 py-3">
+              <h3 className="font-semibold text-sm text-zinc-100">Notifications</h3>
+            </div>
+            <div className="max-h-96 overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="px-4 py-6 text-center text-sm text-zinc-500">
+                  You have no new notifications.
+                </div>
+              ) : (
+                <div className="divide-y divide-zinc-800">
+                  {notifications.map((notif) => (
+                    <div key={notif.id} className="flex gap-3 px-4 py-3 hover:bg-zinc-800/50 transition-colors">
+                      <div className="mt-0.5 shrink-0">
+                        {notif.status === "loading" && <Loader2 className="h-4 w-4 animate-spin text-indigo-400" />}
+                        {notif.status === "success" && <CheckCircle2 className="h-4 w-4 text-emerald-400" />}
+                        {notif.status === "error" && <AlertCircle className="h-4 w-4 text-red-400" />}
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium text-zinc-200 leading-tight">
+                          {notif.title}
+                        </p>
+                        <p className="text-xs text-zinc-500">
+                          {notif.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

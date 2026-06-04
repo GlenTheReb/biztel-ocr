@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNotification } from "@/contexts/NotificationContext";
 
 // Define a type for the document
 type DocumentRecord = any;
 
 export default function ReviewForm({ document }: { document: DocumentRecord }) {
   const router = useRouter();
+  const { addNotification, updateNotification } = useNotification();
   const [isSaving, setIsSaving] = useState(false);
   
   // Initialize form state with AI extracted values
@@ -37,6 +39,7 @@ export default function ReviewForm({ document }: { document: DocumentRecord }) {
 
   const handleSave = async () => {
     setIsSaving(true);
+    const notifId = addNotification(`Approving record ${document.fileName}...`, "loading");
     try {
       const res = await fetch(`/api/review/${document.id}`, {
         method: "POST",
@@ -45,12 +48,15 @@ export default function ReviewForm({ document }: { document: DocumentRecord }) {
       });
       
       if (res.ok) {
+        updateNotification(notifId, `Record ${document.fileName} approved.`, "success");
         // Redirect to history upon successful approval
         router.push("/history");
       } else {
+        updateNotification(notifId, `Failed to approve record.`, "error");
         alert("Failed to save.");
       }
     } catch (err) {
+      updateNotification(notifId, `Error approving record.`, "error");
       alert("Error saving record.");
     } finally {
       setIsSaving(false);

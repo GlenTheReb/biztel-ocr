@@ -25,5 +25,6 @@ This document outlines the AI-assisted engineering workflow used to build the Bi
 ## Areas where AI helped most
 *   **Speed:** Setting up Drizzle ORM schemas and the Next.js App Router boilerplate.
 *   **Multimodal OCR:** Instead of writing complex Regex pipelines with Tesseract, using Gemini 3.5 Flash allowed us to map visual handwritten data directly to a TypeScript interface in one API call.
+*   **Global State Management (Bonus Feature):** Based on user feedback for a "Google Cloud-style" tracking system, the AI architected and implemented a Global React Context (`NotificationContext`) to track async backend events (Uploads, Approvals) across the Next.js App Router boundary in real-time.
 *   **Data Aggregation & Filtering:** The AI rapidly built Drizzle queries for Dashboard analytics, and implemented Client Component state (`useState`) to build a dynamic search and filter system for the Upload History table.
 *   **UI/UX:** Rapidly generating premium dark-mode Tailwind v4 components with proper hover states and active route highlighting.

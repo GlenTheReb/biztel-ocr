@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UploadCloud, File, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNotification } from "@/contexts/NotificationContext";
 
 export default function UploadPage() {
   const router = useRouter();
+  const { addNotification, updateNotification } = useNotification();
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -22,6 +24,7 @@ export default function UploadPage() {
   const handleUpload = async () => {
     if (!file) return;
     setIsUploading(true);
+    const notifId = addNotification(`Uploading and analyzing ${file.name}...`, "loading");
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -33,11 +36,14 @@ export default function UploadPage() {
       const data = await res.json();
 
       if (data.success) {
+        updateNotification(notifId, `${file.name} successfully analyzed.`, "success");
         router.push(`/review/${data.documentId}`);
       } else {
+        updateNotification(notifId, `Failed to analyze ${file.name}.`, "error");
         alert("Upload failed. Check the console for details.");
       }
     } catch (e) {
+      updateNotification(notifId, `Error uploading ${file.name}.`, "error");
       alert("Error uploading file.");
     } finally {
       setIsUploading(false);
