@@ -13,19 +13,20 @@ Built as an assignment for BiztelAI.
 
 ### Core Architecture Workflow
 1. **Upload Phase:** A user uploads a document (Image/PDF) via the drag-and-drop interface.
-2. **AI Extraction Phase:** The image is converted to a base64 buffer and sent directly to the Gemini 3.5 vision model alongside a strict prompt enforcing a JSON schema. The AI returns the extracted manufacturing fields and assigns a `confidenceScore` (0.0 to 1.0) for every field.
-3. **Database Insertion:** The raw AI extraction is saved to the Neon database with a `PENDING` status via Drizzle ORM.
-4. **Review Phase:** The user is redirected to a side-by-side review UI. Fields with low confidence (< 80%) or missing data are dynamically highlighted to warn the user.
-5. **Approval:** The user corrects the data and clicks "Save & Approve", updating the database row to `APPROVED`.
+2. **AI Extraction Phase (Multi-Row):** The image is sent directly to the Gemini 3.5 vision model alongside a strict prompt enforcing a JSON array schema. The AI reads tabular ledgers and extracts *multiple* rows simultaneously, assigning a `confidenceScore` (0.0 to 1.0) for every field.
+3. **Database Insertion:** The raw AI extraction array is saved to the Neon database via Drizzle ORM batch-insert, grouping all rows under a unique Batch ID.
+4. **Bulk Review Phase:** The user is redirected to a side-by-side Bulk Review UI. Fields with low confidence (< 80%) or validation failures are dynamically highlighted. The user can seamlessly iterate, add missing rows, or remove rows.
+5. **Approval:** The user corrects the data and clicks "Approve All", completing a Bulk Save transaction to the database.
 
 ## ✅ Core Requirements Checklist
 1. **Document Upload:** Users can upload images/PDFs via Drag-and-Drop, preview them, and view history.
-2. **AI-Based Data Extraction:** Gemini 3.5 Flash natively extracts strict schema JSON directly from images.
-3. **Review Workflow:** Side-by-side UI for human-in-the-loop validation and editing.
+2. **AI-Based Data Extraction:** Gemini 3.5 Flash natively extracts strict schema JSON arrays directly from tabular images.
+3. **Bulk Review Workflow:** Side-by-side UI for human-in-the-loop validation, allowing users to iterate over multiple extracted rows at once.
 4. **Confidence Scoring:** Gemini assigns a confidence score (0.0 - 1.0) for every extracted field.
-5. **Validation/Highlights:** Any field missing or with <80% confidence is dynamically highlighted with an amber warning ring in the UI.
-6. **Analytics Dashboard:** KPI cards displaying total uploads, pending vs approved records, and manufacturing aggregates (Quantity Produced).
-7. **Search & History:** A comprehensive data table showing all past uploads.
+5. **Validation/Highlights:** Any field missing, with <80% confidence, or violating business rules is dynamically highlighted in red/amber.
+6. **Analytics Dashboard:** KPI cards displaying total uploads, pending vs approved records, and manufacturing aggregates.
+7. **Search & History:** A comprehensive data table showing all past uploads grouped by image.
+8. **Global Notifications (Bonus):** A Google Cloud-style Navbar notification system tracking real-time async events, persisted locally.
 
 ## 🛠 Setup Instructions
 

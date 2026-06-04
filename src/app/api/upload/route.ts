@@ -38,31 +38,36 @@ export async function POST(req: NextRequest) {
     
     const prompt = `You are a manufacturing operational document extraction system.
 Analyze this handwritten/semi-structured document.
-Extract the following fields. If a field is missing, leave it null.
+This document is a tabular ledger containing multiple rows of data. Extract EVERY single row you can read into an array of records.
+For each row, extract the following fields (leave null if missing).
 Also, assign a confidence score from 0.0 to 1.0 for each field indicating how certain you are of your extraction.
 
 Return ONLY a valid JSON object with exactly this schema (do not include markdown block ticks like \`\`\`json):
 {
-  "extracted": {
-    "date": "YYYY-MM-DD",
-    "shift": "string",
-    "employeeNumber": "string",
-    "operationCode": "string",
-    "machineNumber": "string",
-    "workOrderNumber": "string",
-    "quantityProduced": integer,
-    "timeTaken": "string"
-  },
-  "confidenceScores": {
-    "date": 0.0,
-    "shift": 0.0,
-    "employeeNumber": 0.0,
-    "operationCode": 0.0,
-    "machineNumber": 0.0,
-    "workOrderNumber": 0.0,
-    "quantityProduced": 0.0,
-    "timeTaken": 0.0
-  }
+  "records": [
+    {
+      "extracted": {
+        "date": "YYYY-MM-DD",
+        "shift": "string",
+        "employeeNumber": "string",
+        "operationCode": "string",
+        "machineNumber": "string",
+        "workOrderNumber": "string",
+        "quantityProduced": integer,
+        "timeTaken": "string"
+      },
+      "confidenceScores": {
+        "date": 0.0,
+        "shift": 0.0,
+        "employeeNumber": 0.0,
+        "operationCode": 0.0,
+        "machineNumber": 0.0,
+        "workOrderNumber": 0.0,
+        "quantityProduced": 0.0,
+        "timeTaken": 0.0
+      }
+    }
+  ]
 }`;
 
     const imageParts = [{
@@ -80,54 +85,59 @@ Return ONLY a valid JSON object with exactly this schema (do not include markdow
     responseText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
     
     const parsedData = JSON.parse(responseText);
-    const extracted = parsedData.extracted || {};
-
-    // ---------------------------------------------------------
-    // Requirement 5: Business Rules Validation
-    // ---------------------------------------------------------
-    const validationFailures: string[] = [];
+    const records = parsedData.records || [];
     
-    // Rule: Empty or invalid quantity
-    if (extracted.quantityProduced === null || extracted.quantityProduced === undefined || extracted.quantityProduced <= 0) {
-      validationFailures.push("Empty or invalid quantity produced");
-    } else if (extracted.quantityProduced > 10000) {
-      // Rule: Suspicious numeric values
-      validationFailures.push("Suspiciously high quantity produced (>10,000)");
+    if (records.length === 0) {
+      return NextResponse.json({ success: false, error: "No records found in document" }, { status: 400 });
     }
 
-    // Rule: Invalid shift values
-    const validShifts = ["Morning", "Evening", "Night", "1", "2", "3", "Day"];
-    if (extracted.shift && !validShifts.includes(extracted.shift)) {
-      validationFailures.push(`Invalid shift value detected: '${extracted.shift}'`);
-    }
+    const insertions = records.map((record: any) => {
+      const extracted = record.extracted || {};
+      const validationFailures: string[] = [];
+      
+      // Rule: Empty or invalid quantity
+      if (extracted.quantityProduced === null || extracted.quantityProduced === undefined || extracted.quantityProduced <= 0) {
+        validationFailures.push("Empty or invalid quantity produced");
+      } else if (extracted.quantityProduced > 10000) {
+        validationFailures.push("Suspiciously high quantity produced (>10,000)");
+      }
 
-    // Rule: Missing mandatory fields
-    if (!extracted.machineNumber) validationFailures.push("Missing mandatory field: Machine Number");
-    if (!extracted.date) validationFailures.push("Missing mandatory field: Date");
+      // Rule: Invalid shift values
+      const validShifts = ["Morning", "Evening", "Night", "1", "2", "3", "Day"];
+      if (extracted.shift && !validShifts.includes(extracted.shift)) {
+        validationFailures.push(`Invalid shift value detected: '${extracted.shift}'`);
+      }
 
-    if (validationFailures.length > 0) {
-      console.log("[API] Validation Failures detected:", validationFailures);
-    }
+      // Rule: Missing mandatory fields
+      if (!extracted.machineNumber) validationFailures.push("Missing mandatory field: Machine Number");
+      if (!extracted.date) validationFailures.push("Missing mandatory field: Date");
 
-    // Save to Database via Drizzle
-    await db.insert(documents).values({
-      id,
-      fileName: file.name,
-      fileUrl,
-      status: "PENDING",
-      date: extracted.date || null,
-      shift: extracted.shift || null,
-      employeeNumber: extracted.employeeNumber || null,
-      operationCode: extracted.operationCode || null,
-      machineNumber: extracted.machineNumber || null,
-      workOrderNumber: extracted.workOrderNumber || null,
-      quantityProduced: extracted.quantityProduced || null,
-      timeTaken: extracted.timeTaken || null,
-      confidenceScores: JSON.stringify(parsedData.confidenceScores || {}),
-      validationFailures: JSON.stringify(validationFailures)
+      if (validationFailures.length > 0) {
+        console.log(`[API] Validation Failures in row:`, validationFailures);
+      }
+
+      return {
+        id: crypto.randomUUID(),
+        fileName, // Use the generated fileName as the batch grouping ID
+        fileUrl,
+        status: "PENDING",
+        date: extracted.date || null,
+        shift: extracted.shift || null,
+        employeeNumber: extracted.employeeNumber || null,
+        operationCode: extracted.operationCode || null,
+        machineNumber: extracted.machineNumber ? String(extracted.machineNumber).toUpperCase() : null,
+        workOrderNumber: extracted.workOrderNumber || null,
+        quantityProduced: extracted.quantityProduced || null,
+        timeTaken: extracted.timeTaken || null,
+        confidenceScores: JSON.stringify(record.confidenceScores || {}),
+        validationFailures: JSON.stringify(validationFailures)
+      };
     });
 
-    return NextResponse.json({ success: true, documentId: id });
+    // Save to Database via Drizzle (Batch Insert)
+    await db.insert(documents).values(insertions);
+
+    return NextResponse.json({ success: true, batchId: fileName, count: records.length });
   } catch (error) {
     console.error("Upload Error:", error);
     return NextResponse.json({ success: false, error: "Failed to process document" }, { status: 500 });

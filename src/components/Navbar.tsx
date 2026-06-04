@@ -13,7 +13,7 @@ export function Navbar() {
   if (pathname.includes("/history")) title = "Processed History";
   if (pathname.includes("/review")) title = "Review Record";
 
-  const { notifications } = useNotification();
+  const { notifications, markAllAsRead } = useNotification();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -28,14 +28,17 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const unreadCount = notifications.length;
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-950 px-8">
       <h1 className="text-lg font-semibold text-zinc-100">{title}</h1>
       <div className="flex items-center gap-4 relative" ref={dropdownRef}>
         <button 
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => {
+            if (!isOpen) markAllAsRead();
+            setIsOpen(!isOpen);
+          }}
           className="relative text-zinc-400 hover:text-zinc-100 transition-colors"
         >
           <Bell size={20} />

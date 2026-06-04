@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FileText, Eye, CheckCircle, Clock, Search, Filter } from "lucide-react";
+import { FileText, Eye, CheckCircle, Clock, Search, Filter, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Define a type for the document
@@ -82,8 +82,8 @@ export default function HistoryTable({ initialDocs }: { initialDocs: DocumentRec
                         <div className="flex h-8 w-8 items-center justify-center rounded bg-zinc-800 text-indigo-400">
                           <FileText size={16} />
                         </div>
-                        <span className="font-medium text-zinc-200 truncate max-w-[200px]">
-                          {doc.fileName}
+                        <span className="font-medium text-zinc-200">
+                          {doc.fileName.length > 37 ? doc.fileName.substring(37) : doc.fileName}
                         </span>
                       </div>
                     </td>
@@ -105,11 +105,11 @@ export default function HistoryTable({ initialDocs }: { initialDocs: DocumentRec
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link 
-                        href={`/review/${doc.id}`}
-                        className="inline-flex items-center gap-2 rounded-md bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-700"
+                        href={`/review/${encodeURIComponent(doc.fileName)}`}
+                        className="inline-flex items-center gap-1.5 rounded-md bg-indigo-600/10 px-3 py-1.5 text-xs font-semibold text-indigo-400 transition-colors hover:bg-indigo-600/20"
                       >
-                        <Eye size={14} />
-                        View
+                        View Batch
+                        <ArrowRight size={14} />
                       </Link>
                     </td>
                   </tr>

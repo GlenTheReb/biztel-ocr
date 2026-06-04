@@ -7,13 +7,16 @@ import ReviewForm from "./ReviewForm";
 export default async function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
-  const doc = await db.query.documents.findFirst({
-    where: eq(documents.id, id)
+  const docs = await db.query.documents.findMany({
+    where: eq(documents.fileName, decodeURIComponent(id))
   });
 
-  if (!doc) {
+  if (!docs || docs.length === 0) {
     notFound();
   }
+
+  // All docs share the same file URL
+  const fileUrl = docs[0].fileUrl;
 
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-6">
@@ -22,17 +25,17 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
         <h3 className="mb-4 text-sm font-medium text-zinc-400">Original Document Preview</h3>
         <div className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900/50 flex items-center justify-center overflow-hidden relative">
           {/* Using standard iframe/img for prototype to avoid next/image domain config issues with uploads */}
-          {doc.fileUrl.endsWith(".pdf") ? (
-             <iframe src={doc.fileUrl} className="w-full h-full" title="Document Preview" />
+          {fileUrl.endsWith(".pdf") ? (
+             <iframe src={fileUrl} className="w-full h-full" title="Document Preview" />
           ) : (
-             <img src={doc.fileUrl} alt="Document" className="max-w-full max-h-full object-contain" />
+             <img src={fileUrl} alt="Document" className="max-w-full max-h-full object-contain" />
           )}
         </div>
       </div>
 
-      {/* Right side: Review Form (Client Component) */}
-      <div className="w-[450px] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-xl">
-        <ReviewForm document={doc} />
+      {/* Right side: Bulk Review Form (Client Component) */}
+      <div className="w-[450px] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-xl flex flex-col">
+        <ReviewForm documents={docs} batchId={decodeURIComponent(id)} />
       </div>
     </div>
   );

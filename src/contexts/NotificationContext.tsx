@@ -9,6 +9,7 @@ export interface NotificationEvent {
   title: string;
   status: NotificationStatus;
   timestamp: Date;
+  read: boolean;
 }
 
 interface NotificationContextType {
@@ -16,17 +17,42 @@ interface NotificationContextType {
   addNotification: (title: string, status: NotificationStatus) => string;
   updateNotification: (id: string, title: string, status: NotificationStatus) => void;
   removeNotification: (id: string) => void;
+  markAllAsRead: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<NotificationEvent[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load from local storage on mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem("ocr-notifications");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const formatted = parsed.map((n: any) => ({
+          ...n,
+          timestamp: new Date(n.timestamp)
+        }));
+        setNotifications(formatted);
+      } catch (e) {}
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // Save to local storage on change
+  React.useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem("ocr-notifications", JSON.stringify(notifications));
+    }
+  }, [notifications, isLoaded]);
 
   const addNotification = useCallback((title: string, status: NotificationStatus) => {
     const id = Math.random().toString(36).substring(2, 9);
     setNotifications((prev) => [
-      { id, title, status, timestamp: new Date() },
+      { id, title, status, timestamp: new Date(), read: false },
       ...prev,
     ]);
     return id;
@@ -35,7 +61,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const updateNotification = useCallback((id: string, title: string, status: NotificationStatus) => {
     setNotifications((prev) =>
       prev.map((notif) =>
-        notif.id === id ? { ...notif, title, status, timestamp: new Date() } : notif
+        notif.id === id ? { ...notif, title, status, timestamp: new Date(), read: false } : notif
       )
     );
   }, []);
@@ -44,8 +70,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setNotifications((prev) => prev.filter((notif) => notif.id !== id));
   }, []);
 
+  const markAllAsRead = useCallback(() => {
+    setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
+  }, []);
+
   return (
-    <NotificationContext.Provider value={{ notifications, addNotification, updateNotification, removeNotification }}>
+    <NotificationContext.Provider value={{ notifications, addNotification, updateNotification, removeNotification, markAllAsRead }}>
       {children}
     </NotificationContext.Provider>
   );

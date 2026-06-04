@@ -36,8 +36,8 @@ export default function UploadPage() {
       const data = await res.json();
 
       if (data.success) {
-        updateNotification(notifId, `${file.name} successfully analyzed.`, "success");
-        router.push(`/review/${data.documentId}`);
+        updateNotification(notifId, `Extracted ${data.count} records from ${file.name}.`, "success");
+        router.push(`/review/${encodeURIComponent(data.batchId)}`);
       } else {
         updateNotification(notifId, `Failed to analyze ${file.name}.`, "error");
         alert("Upload failed. Check the console for details.");
