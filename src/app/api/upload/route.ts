@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
     await require("fs/promises").writeFile(filePath, buffer);
     const fileUrl = `/uploads/${fileName}`;
 
-    // Call Gemini Model (using the 1.5-flash string as it is the current fast multimodal SDK string)
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Call Gemini Model (using the 3.5-flash string as correctly pointed out by the user)
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
     
     const prompt = `You are a manufacturing operational document extraction system.
 Analyze this handwritten/semi-structured document.

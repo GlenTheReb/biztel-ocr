@@ -18,6 +18,7 @@ This document outlines the AI-assisted engineering workflow used to build the Bi
 *   **Git Identity Management (Manual Intervention):** The AI's initial commits used an incorrect git config (`GlenRebello1`). Manual intervention directed the AI to perform a "nuclear" Git history rewrite (`rm -rf .git`) to ensure all commits were properly attributed to `GlenTheReb`.
 *   **Prompt Engineering (AI Assisted):** The prompt used in `/api/upload` was crafted by the AI to enforce strict JSON schemas and return parallel `confidenceScores` for every single field extracted from the handwritten image.
 *   **UI Auditing (Manual Intervention):** While the backend logic was updated to use Gemini 3.5, the user manually caught and directed the AI to fix hardcoded string discrepancies in the Sidebar UI.
+*   **API Model String Crash (Debugging):** The AI stubbornly left the SDK model string as `"gemini-1.5-flash"` in the API route, causing a 404 crash on the first upload attempt. The user had to manually intervene again to force the AI to update the actual code string to `"gemini-3.5-flash"`.
 
 ## Areas where AI helped most
 *   **Speed:** Setting up Drizzle ORM schemas and the Next.js App Router boilerplate.
