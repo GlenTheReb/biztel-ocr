@@ -59,7 +59,7 @@ export function Sidebar() {
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-medium text-zinc-200">System Ready</span>
-            <span className="text-xs text-zinc-500">Gemini 1.5 Flash</span>
+            <span className="text-xs text-zinc-500">Gemini 3.5 Flash</span>
           </div>
         </div>
       </div>
