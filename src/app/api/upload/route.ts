@@ -16,6 +16,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    console.log(`[API] Processing new upload: ${file.name}`);
+
     // Convert file to base64 for Gemini SDK
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -72,6 +74,8 @@ Return ONLY a valid JSON object with exactly this schema (do not include markdow
 
     const result = await model.generateContent([prompt, ...imageParts]);
     let responseText = result.response.text();
+    console.log("[API] Raw Gemini Response:", responseText);
+
     // Clean up markdown ticks if Gemini included them
     responseText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
     
@@ -100,6 +104,10 @@ Return ONLY a valid JSON object with exactly this schema (do not include markdow
     // Rule: Missing mandatory fields
     if (!extracted.machineNumber) validationFailures.push("Missing mandatory field: Machine Number");
     if (!extracted.date) validationFailures.push("Missing mandatory field: Date");
+
+    if (validationFailures.length > 0) {
+      console.log("[API] Validation Failures detected:", validationFailures);
+    }
 
     // Save to Database via Drizzle
     await db.insert(documents).values({
