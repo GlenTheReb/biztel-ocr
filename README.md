@@ -18,6 +18,15 @@ Built as an assignment for BiztelAI.
 4. **Review Phase:** The user is redirected to a side-by-side review UI. Fields with low confidence (< 80%) or missing data are dynamically highlighted to warn the user.
 5. **Approval:** The user corrects the data and clicks "Save & Approve", updating the database row to `APPROVED`.
 
+## ✅ Core Requirements Checklist
+1. **Document Upload:** Users can upload images/PDFs via Drag-and-Drop, preview them, and view history.
+2. **AI-Based Data Extraction:** Gemini 3.5 Flash natively extracts strict schema JSON directly from images.
+3. **Review Workflow:** Side-by-side UI for human-in-the-loop validation and editing.
+4. **Confidence Scoring:** Gemini assigns a confidence score (0.0 - 1.0) for every extracted field.
+5. **Validation/Highlights:** Any field missing or with <80% confidence is dynamically highlighted with an amber warning ring in the UI.
+6. **Analytics Dashboard:** KPI cards displaying total uploads, pending vs approved records, and manufacturing aggregates (Quantity Produced).
+7. **Search & History:** A comprehensive data table showing all past uploads.
+
 ## 🛠 Setup Instructions
 
 ### Prerequisites

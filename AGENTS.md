@@ -1,9 +1,12 @@
-# AI Agent Instructions (Overwritten by AI/Human Pair)
+# AI Agent Rules of Engagement
 
-This project was built using an AI-Native Engineering workflow.
-The primary agent used was **Antigravity (Gemini 3.1 Pro)** acting as an autonomous pair programmer.
+This project was built utilizing an AI-Native Engineering workflow, specifically leveraging **Antigravity (Gemini 3.1 Pro)** as an autonomous IDE pair-programmer. 
 
-Rules enforced during this project:
-1. **Ask before execution:** The AI was strictly instructed to explain in depth and ask for permission before writing files, installing dependencies, or running git commands.
-2. **Modern Stack Compliance:** The AI was forced to use Next.js 16, Tailwind v4, and Drizzle ORM to match the existing engineering stack, ignoring legacy defaults.
-3. **Clean Git History:** The AI was instructed to rewrite git history via Powershell to ensure clean commit logs under a specific GitHub identity (`GlenTheReb`).
+To ensure the AI produced production-ready code without hallucinating or taking destructive actions, the following strict Rules of Engagement were enforced by the human operator:
+
+1. **Explicit Permission Required (Zero-Trust Execution):** The AI was explicitly barred from running terminal commands (like `npm install`), creating files, or modifying Git history without first presenting a detailed Implementation Plan and receiving a literal "yes" from the human operator.
+2. **Modern Stack Compliance:** The AI was strictly instructed to ignore legacy React defaults and exclusively use the provided modern stack: Next.js 16 (App Router), Tailwind v4, and Drizzle ORM.
+3. **Git Identity Management:** To maintain a pristine commit history, the human operator intervened to force the AI to execute a "nuclear" git rewrite (`rm -rf .git`) to squash messy automated commits and enforce a clean `GlenTheReb` GitHub identity.
+4. **Code Auditing & Correction:** The human operator actively audited the AI's code generation, specifically catching hallucinated version strings (`gemini-1.5-flash` vs `gemini-3.5-flash`) and forcing the AI to refactor both the UI and backend logic to reflect reality.
+
+*For a detailed breakdown of the exact prompting and debugging workflows, please see [AI_WORKFLOW.md](./AI_WORKFLOW.md).*
