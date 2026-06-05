@@ -18,6 +18,7 @@ interface NotificationContextType {
   updateNotification: (id: string, title: string, status: NotificationStatus) => void;
   removeNotification: (id: string) => void;
   markAllAsRead: () => void;
+  clearAllNotifications: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -74,8 +75,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
   }, []);
 
+  const clearAllNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
   return (
-    <NotificationContext.Provider value={{ notifications, addNotification, updateNotification, removeNotification, markAllAsRead }}>
+    <NotificationContext.Provider value={{ notifications, addNotification, updateNotification, removeNotification, markAllAsRead, clearAllNotifications }}>
       {children}
     </NotificationContext.Provider>
   );
