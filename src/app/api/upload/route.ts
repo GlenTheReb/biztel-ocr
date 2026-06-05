@@ -88,11 +88,11 @@ Return ONLY a valid JSON object with exactly this schema (do not include markdow
         const result = await model.generateContent([prompt, ...imageParts]);
         responseText = result.response.text();
       } catch (e2: any) {
-        console.warn(`[API] Attempt 2 Failed (${e2.message}). Falling back to gemini-1.5-flash...`);
+        console.warn(`[API] Attempt 2 Failed (${e2.message}). Falling back to gemini-3.1-flash-lite...`);
         
         try {
-          console.log("[API] Attempt 3: Using gemini-1.5-flash");
-          const fallbackModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+          console.log("[API] Attempt 3: Using gemini-3.1-flash-lite");
+          const fallbackModel = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
           const result = await fallbackModel.generateContent([prompt, ...imageParts]);
           responseText = result.response.text();
         } catch (e3: any) {

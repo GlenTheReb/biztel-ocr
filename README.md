@@ -15,7 +15,7 @@ Built as an assignment for BiztelAI.
 
 ### Core Architecture Workflow
 1. **Upload Phase:** A user uploads a document (Image/PDF) via the drag-and-drop interface. The file is streamed directly to Vercel Blob cloud storage for serverless compatibility.
-2. **AI Extraction Phase (Multi-Row):** The image URL is sent to the Gemini 3.5 vision model alongside a strict prompt enforcing a JSON array schema. The system includes an automatic retry and fallback mechanism to `gemini-1.5-flash` to handle high-capacity 503 errors. The AI extracts *multiple* rows simultaneously, assigning a `confidenceScore` (0.0 to 1.0) for every field.
+2. **AI Extraction Phase (Multi-Row):** The image URL is sent to the Gemini 3.5 vision model alongside a strict prompt enforcing a JSON array schema. The system includes an automatic retry and fallback mechanism to `gemini-3.1-flash-lite` to handle high-capacity 503 errors. The AI extracts *multiple* rows simultaneously, assigning a `confidenceScore` (0.0 to 1.0) for every field.
 3. **Database Insertion:** The raw AI extraction array is saved to the Neon database via Drizzle ORM batch-insert, grouping all rows under a unique Batch ID.
 4. **Bulk Review Phase:** The user is redirected to a side-by-side Bulk Review UI. Fields with low confidence (< 80%) or validation failures are dynamically highlighted. The user can seamlessly iterate, add missing rows, or remove rows.
 5. **Approval:** The user corrects the data and clicks "Approve All", completing a Bulk Save transaction to the database.
