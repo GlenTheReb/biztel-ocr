@@ -26,7 +26,8 @@ export async function POST(req: NextRequest) {
     const id = crypto.randomUUID();
     const fileName = `${id}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
     
-    const blob = await put(fileName, file, { access: 'public' });
+    // Use buffer instead of the raw File object to prevent Next.js Undici fetch stream exhaustion bugs
+    const blob = await put(fileName, buffer, { access: 'public', contentType: file.type });
     const fileUrl = blob.url;
 
     // Define Prompt and Image Parts

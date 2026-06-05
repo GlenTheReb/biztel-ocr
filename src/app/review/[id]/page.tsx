@@ -25,10 +25,14 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
         <h3 className="mb-4 text-sm font-medium text-zinc-400">Original Document Preview</h3>
         <div className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900/50 flex items-center justify-center overflow-hidden relative">
           {/* Using standard iframe/img for prototype to avoid next/image domain config issues with uploads */}
-          {fileUrl.endsWith(".pdf") ? (
-             <iframe src={fileUrl} className="w-full h-full" title="Document Preview" />
+          {fileUrl ? (
+            fileUrl.endsWith(".pdf") ? (
+               <iframe src={fileUrl} className="w-full h-full" title="Document Preview" />
+            ) : (
+               <img src={fileUrl} alt="Document" className="max-w-full max-h-full object-contain" />
+            )
           ) : (
-             <img src={fileUrl} alt="Document" className="max-w-full max-h-full object-contain" />
+            <div className="text-sm text-zinc-500">Preview not available</div>
           )}
         </div>
       </div>

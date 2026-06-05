@@ -40,9 +40,10 @@ export default function HistoryTable({ initialDocs }: { initialDocs: DocumentRec
 
   const filteredDocs = docs.filter((doc) => {
     // Search filter
+    const searchLower = searchQuery.toLowerCase();
     const matchesSearch = 
-      (doc.fileName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (doc.machineNumber || "").toLowerCase().includes(searchQuery.toLowerCase());
+      (doc.fileName || "").toLowerCase().includes(searchLower) ||
+      (doc.searchableText || "").includes(searchLower);
     
     // Status filter
     const matchesStatus = statusFilter === "ALL" || doc.status === statusFilter;
@@ -105,8 +106,12 @@ export default function HistoryTable({ initialDocs }: { initialDocs: DocumentRec
                   <tr key={doc.id} className="transition-colors hover:bg-zinc-900/30">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded bg-zinc-800 text-indigo-400">
-                          <FileText size={16} />
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded overflow-hidden bg-zinc-800 text-indigo-400">
+                          {doc.fileUrl && !doc.fileUrl.endsWith(".pdf") ? (
+                            <img src={doc.fileUrl} alt="Thumbnail" className="w-full h-full object-cover" />
+                          ) : (
+                            <FileText size={16} />
+                          )}
                         </div>
                         <span className="font-medium text-zinc-200">
                           {doc.fileName.length > 37 ? doc.fileName.substring(37) : doc.fileName}

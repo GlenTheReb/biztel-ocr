@@ -2,13 +2,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, UploadCloud, History, FileText } from "lucide-react";
+import { LayoutDashboard, UploadCloud, History, FileText, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Upload Document", href: "/upload", icon: UploadCloud },
   { name: "History", href: "/history", icon: History },
+  { name: "Search Database", href: "/search", icon: Database },
 ];
 
 export function Sidebar() {

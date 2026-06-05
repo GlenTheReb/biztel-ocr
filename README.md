@@ -27,7 +27,7 @@ Built as an assignment for BiztelAI.
 4. **Confidence Scoring:** Gemini assigns a confidence score (0.0 - 1.0) for every extracted field.
 5. **Validation/Highlights:** Any field missing, with <80% confidence, or violating business rules is dynamically highlighted in red/amber.
 6. **Analytics Dashboard:** KPI cards displaying total uploads, pending vs approved records, and manufacturing aggregates.
-7. **Search & History:** A comprehensive data table showing all past uploads grouped by image.
+7. **Search & History:** A comprehensive data table showing all past uploads grouped by image, and a dedicated database search page for granular row-level queries.
 8. **Global Notifications (Bonus):** A Google Cloud-style Navbar notification system tracking real-time async events, persisted locally.
 9. **Data Management & UX Polish (Bonus):** Full CRUD capability allowing batch deletion of bad uploads via custom UI modals, plus a real-time Gemini API connectivity status ring.
 
@@ -72,7 +72,7 @@ Built as an assignment for BiztelAI.
 
 ## 🧠 Assumptions & Tradeoffs
 
-1. **Local File Storage vs Cloud Storage:** For the sake of prototyping speed, uploaded files are written directly to the Next.js `public/uploads` directory. In a production environment (or when deploying to a serverless platform like Vercel), an object storage solution like AWS S3 or Vercel Blob would be required.
+1. **Local File Storage vs Cloud Storage:** The initial prototype used the Next.js `public/uploads` directory for speed. It has since been successfully migrated to use **Vercel Blob** for full serverless production compatibility.
 2. **Authentication:** User authentication (via NextAuth) was deliberately omitted to focus purely on the core OCR extraction and validation workflow within the 48-hour limit. The app acts as a single-tenant operational dashboard.
 3. **AI Vision over Tesseract:** We assumed the manufacturing documents would be messy and handwritten. Instead of using traditional OCR (which requires brittle Regex parsing), we passed the images directly to a multimodal LLM to extract meaning and structure simultaneously.
 
