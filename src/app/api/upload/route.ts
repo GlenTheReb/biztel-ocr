@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "@/db";
 import { documents } from "@/db/schema";
-import path from "path";
+import { put } from "@vercel/blob";
 
 // Using Gemini API SDK
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -22,16 +22,12 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     
-    // Save file locally to public/uploads
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await require("fs/promises").mkdir(uploadDir, { recursive: true });
-    
+    // Save file to Vercel Blob (Serverless-friendly)
     const id = crypto.randomUUID();
     const fileName = `${id}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-    const filePath = path.join(uploadDir, fileName);
     
-    await require("fs/promises").writeFile(filePath, buffer);
-    const fileUrl = `/uploads/${fileName}`;
+    const blob = await put(fileName, file, { access: 'public' });
+    const fileUrl = blob.url;
 
     // Call Gemini Model (using the 3.5-flash string as correctly pointed out by the user)
     const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
