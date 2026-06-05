@@ -25,7 +25,7 @@ Built as an assignment for BiztelAI.
 2. **AI-Based Data Extraction:** Gemini 3.5 Flash natively extracts strict schema JSON arrays directly from tabular images.
 3. **Bulk Review Workflow:** Side-by-side UI for human-in-the-loop validation, allowing users to iterate over multiple extracted rows at once.
 4. **Confidence Scoring:** Gemini assigns a confidence score (0.0 - 1.0) for every extracted field.
-5. **Validation/Highlights:** Any field missing, with <80% confidence, or violating business rules is dynamically highlighted in red/amber.
+5. **Validation/Highlights:** Any field missing, with <80% confidence, or violating business rules is dynamically highlighted in red/amber. Shift numbers are also automatically normalized from Roman to Arabic numerals.
 6. **Analytics Dashboard:** KPI cards displaying total uploads, pending vs approved records, and manufacturing aggregates.
 7. **Search & History:** A comprehensive data table showing all past uploads grouped by image, and a dedicated database search page for granular row-level queries.
 8. **Global Notifications (Bonus):** A Google Cloud-style Navbar notification system tracking real-time async events, persisted locally.
@@ -56,6 +56,7 @@ Built as an assignment for BiztelAI.
    ```env
    DATABASE_URL="postgresql://[user]:[password]@[host]/[dbname]?sslmode=require"
    GEMINI_API_KEY="your_google_gemini_api_key"
+   BLOB_READ_WRITE_TOKEN="your_vercel_blob_token"
    ```
 
 4. **Initialize the Database:**
