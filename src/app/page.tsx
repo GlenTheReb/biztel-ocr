@@ -4,6 +4,8 @@ import { count, eq, sum } from "drizzle-orm";
 import { FileStack, CheckCircle2, Clock, Factory } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function Dashboard() {
   // Aggregate queries using Drizzle
   const totalUploadsResult = await db.select({ count: count() }).from(documents);

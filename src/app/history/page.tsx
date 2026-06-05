@@ -3,6 +3,8 @@ import { documents } from "@/db/schema";
 import { desc } from "drizzle-orm";
 import HistoryTable from "./HistoryTable";
 
+export const dynamic = "force-dynamic";
+
 export default async function HistoryPage() {
   // Fetch all documents, ordered by newest first (Server-side)
   const allDocs = await db.query.documents.findMany({
