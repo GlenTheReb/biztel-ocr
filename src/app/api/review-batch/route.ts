@@ -11,7 +11,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
-    // Step 1: Delete all existing PENDING records associated with this batchId (fileName)
+    // Step 1: Get the fileUrl from the DB before deleting the records.
+    const existingDoc = await db.query.documents.findFirst({
+      where: eq(documents.fileName, batchId)
+    });
+    
+    const fileUrl = existingDoc?.fileUrl || "";
+
+    // Step 2: Delete all existing PENDING records associated with this batchId (fileName)
     await db.delete(documents)
       .where(
         and(
@@ -20,19 +27,8 @@ export async function POST(req: Request) {
         )
       );
 
-    // Step 2: If there are records to insert, insert them as APPROVED
+    // Step 3: If there are records to insert, insert them as APPROVED
     if (records.length > 0) {
-      // Find the fileUrl from the first existing record or assume it's passed.
-      // Since they share a batchId, they should share a fileUrl.
-      // The frontend doesn't pass fileUrl back, so we need to fetch it if it's not provided.
-      // Actually, wait, the records array doesn't have fileUrl in ReviewForm state.
-      // Let's get the fileUrl from the DB before deleting.
-      
-      const existingDoc = await db.query.documents.findFirst({
-        where: eq(documents.fileName, batchId)
-      });
-      
-      const fileUrl = existingDoc?.fileUrl || "";
 
       const insertions = records.map((record: any) => ({
         id: record.id || crypto.randomUUID(),
