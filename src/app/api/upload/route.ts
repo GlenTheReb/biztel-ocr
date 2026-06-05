@@ -29,9 +29,7 @@ export async function POST(req: NextRequest) {
     const blob = await put(fileName, file, { access: 'public' });
     const fileUrl = blob.url;
 
-    // Call Gemini Model (using the 3.5-flash string as correctly pointed out by the user)
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
-    
+    // Define Prompt and Image Parts
     const prompt = `You are a manufacturing operational document extraction system.
 Analyze this handwritten/semi-structured document.
 This document is a tabular ledger containing multiple rows of data. Extract EVERY single row you can read into an array of records.
@@ -73,8 +71,37 @@ Return ONLY a valid JSON object with exactly this schema (do not include markdow
       }
     }];
 
-    const result = await model.generateContent([prompt, ...imageParts]);
-    let responseText = result.response.text();
+    let responseText = "";
+
+    // Retry and Fallback Logic
+    try {
+      console.log("[API] Attempt 1: Using gemini-3.5-flash");
+      const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+      const result = await model.generateContent([prompt, ...imageParts]);
+      responseText = result.response.text();
+    } catch (e1: any) {
+      console.warn(`[API] Attempt 1 Failed (${e1.message}). Retrying with gemini-3.5-flash...`);
+      
+      try {
+        console.log("[API] Attempt 2: Using gemini-3.5-flash");
+        const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+        const result = await model.generateContent([prompt, ...imageParts]);
+        responseText = result.response.text();
+      } catch (e2: any) {
+        console.warn(`[API] Attempt 2 Failed (${e2.message}). Falling back to gemini-1.5-flash...`);
+        
+        try {
+          console.log("[API] Attempt 3: Using gemini-1.5-flash");
+          const fallbackModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+          const result = await fallbackModel.generateContent([prompt, ...imageParts]);
+          responseText = result.response.text();
+        } catch (e3: any) {
+          console.error(`[API] All model attempts failed due to capacity (${e3.message}).`);
+          return NextResponse.json({ success: false, error: "AI Models are currently experiencing high capacity. Please wait a few moments and try again." }, { status: 503 });
+        }
+      }
+    }
+
     console.log("[API] Raw Gemini Response:", responseText);
 
     // Clean up markdown ticks if Gemini included them

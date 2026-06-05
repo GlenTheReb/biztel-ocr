@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UploadCloud, File, Loader2 } from "lucide-react";
+import { UploadCloud, File, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNotification } from "@/contexts/NotificationContext";
 
@@ -12,6 +12,7 @@ export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -40,11 +41,11 @@ export default function UploadPage() {
         router.push(`/review/${encodeURIComponent(data.batchId)}`);
       } else {
         updateNotification(notifId, `Failed to analyze ${file.name}.`, "error");
-        alert("Upload failed. Check the console for details.");
+        setUploadError(data.error || "Upload failed. Please ensure the file is valid and try again.");
       }
     } catch (e) {
       updateNotification(notifId, `Error uploading ${file.name}.`, "error");
-      alert("Error uploading file.");
+      setUploadError("An unexpected error occurred while uploading the file. Please try again.");
     } finally {
       setIsUploading(false);
     }
@@ -99,6 +100,29 @@ export default function UploadPage() {
             {isUploading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isUploading ? "Extracting Data..." : "Upload & Analyze"}
           </button>
+        </div>
+      )}
+
+      {/* Upload Error Modal */}
+      {uploadError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
+            <h3 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+              <AlertCircle className="text-red-500" size={20} />
+              Upload Failed
+            </h3>
+            <p className="mt-2 text-sm text-zinc-400">
+              {uploadError}
+            </p>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setUploadError(null)}
+                className="rounded-md bg-zinc-800 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700 transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
