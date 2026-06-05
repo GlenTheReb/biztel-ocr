@@ -126,8 +126,16 @@ Return ONLY a valid JSON object with exactly this schema (do not include markdow
         validationFailures.push("Suspiciously high quantity produced (>10,000)");
       }
 
+      // Normalize shift values (Roman to Arabic)
+      if (extracted.shift) {
+        const s = String(extracted.shift).toUpperCase();
+        if (s === "I") extracted.shift = "1";
+        else if (s === "II") extracted.shift = "2";
+        else if (s === "III") extracted.shift = "3";
+      }
+
       // Rule: Invalid shift values
-      const validShifts = ["Morning", "Evening", "Night", "1", "2", "3", "Day", "I", "II", "III", "i", "ii", "iii"];
+      const validShifts = ["Morning", "Evening", "Night", "1", "2", "3", "Day"];
       if (extracted.shift && !validShifts.includes(extracted.shift)) {
         validationFailures.push(`Invalid shift value detected: '${extracted.shift}'`);
       }
